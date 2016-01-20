@@ -1,0 +1,158 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "gf_TAG"
+
+/* All the _MPFQ_XXX pre-processor constants are private */
+/* NOTE that the following macros are kept from the previous
+ * header */
+/* #undef	_MPFQ_GF2N_DEGREE	*/
+/* #undef	_MPFQ_GF2N_ELT_WIDTH	*/
+/* #undef	_MPFQ_GF2N_ELT_WIDTH_UNREDUCED	*/
+
+#undef  _MPFQ_GF2N_HAS_NATIVE_SQR
+#undef  _MPFQ_GF2N_HAS_NATIVE_MUL
+#undef  _MPFQ_GF2N_HAS_NATIVE_INV
+#undef  _MPFQ_GF2N_HAS_NATIVE_ADD
+#undef  _MPFQ_GF2N_HAS_NATIVE_ADD_UI
+#undef  _MPFQ_GF2N_HAS_NATIVE_SET
+#undef  _MPFQ_GF2N_HAS_NATIVE_SET_UI
+#undef  _MPFQ_GF2N_HAS_NATIVE_SET_UIPOLY
+#undef  _MPFQ_GF2N_HAS_NATIVE_SET_UIPOLY_WIDE
+#undef  _MPFQ_GF2N_HAS_NATIVE_CMP
+#undef  _MPFQ_GF2N_HAS_NATIVE_CMP_UI
+#undef  _MPFQ_GF2N_HAS_NATIVE_GET_UI
+#undef  _MPFQ_GF2N_HAS_NATIVE_GET_UIPOLY
+#undef  _MPFQ_GF2N_HAS_NATIVE_GET_UIPOLY_WIDE
+#undef  _MPFQ_GF2N_HAS_NATIVE_RANDOM
+#undef  _MPFQ_GF2N_HAS_NATIVE_RANDOM2
+#undef  _MPFQ_GF2N_HAS_NATIVE_SQRT
+#undef  _MPFQ_GF2N_HAS_NATIVE_AS_SOLVE
+#undef  _MPFQ_GF2N_HAS_NATIVE_TRACE
+
+#undef  _MPFQ_GF2N_COEFFS_TABLE
+#undef  _MPFQ_GF2N_TRACE_TABLE
+#undef  _MPFQ_GF2N_REDUCTION_TABLE
+#undef  _MPFQ_GF2N_ARTIN_SCHREIER_TABLE
+#undef  _MPFQ_GF2N_SQRT_TABLE
+
+#undef  MPFQ_
+
+#define MPFQ_(X)        NEWPREFIX ## X
+
+typedef	OLDPREFIX_elt			NEWPREFIX_elt;
+typedef	OLDPREFIX_dst_elt		NEWPREFIX_dst_elt;
+typedef	OLDPREFIX_src_elt		NEWPREFIX_src_elt;
+typedef	OLDPREFIX_elt_unreduced		NEWPREFIX_elt_unreduced;
+typedef	OLDPREFIX_dst_elt_unreduced	NEWPREFIX_dst_elt_unreduced;
+typedef	OLDPREFIX_src_elt_unreduced	NEWPREFIX_src_elt_unreduced;
+
+struct NEWPREFIX_field_struct {
+        unsigned int    add;
+        unsigned int    mul;
+        unsigned int    inv;
+        unsigned int    sqr;
+        unsigned int    sqrt;
+        unsigned int    as_solve;
+        OLDPREFIX_field_ptr ptr[1];
+};
+
+typedef struct NEWPREFIX_field_struct NEWPREFIX_field[1];
+typedef struct NEWPREFIX_field_struct * NEWPREFIX_field_ptr;
+
+static inline unsigned int
+NEWPREFIX_field_degree (NEWPREFIX_field_ptr f UNUSED_VARIABLE) {
+        return _MPFQ_GF2N_DEGREE;
+}
+static inline void NEWPREFIX_field_init(NEWPREFIX_field_ptr f) {
+	memset(f, 0, sizeof(NEWPREFIX_field));
+}
+static inline void NEWPREFIX_field_clear(NEWPREFIX_field_ptr f UNUSED_VARIABLE) {}
+
+#define	NEWPREFIX_init(K, x)		OLDPREFIX_init(K->ptr, x)
+#define	NEWPREFIX_clear(K, x)		OLDPREFIX_clear(K->ptr, x)
+
+#define	_MPFQ_GF2N_HAS_NATIVE_ADD
+static inline void
+NEWPREFIX_add (NEWPREFIX_field_ptr K, NEWPREFIX_dst_elt r,
+                NEWPREFIX_src_elt s1, NEWPREFIX_src_elt s2)
+{
+	K->add++;
+	OLDPREFIX_add(K->ptr, r, s1, s2);
+}
+
+/* add_ui is provided by the fallback code */
+
+#define	_MPFQ_GF2N_HAS_NATIVE_MUL
+static inline void
+NEWPREFIX_mul (NEWPREFIX_field_ptr K, NEWPREFIX_dst_elt r,
+                NEWPREFIX_src_elt s1, NEWPREFIX_src_elt s2)
+{
+	K->mul++;
+	OLDPREFIX_mul(K->ptr, r, s1, s2);
+}
+
+#define NEWPREFIX_reduce(K, a, b)	OLDPREFIX_reduce (K->ptr, a, b)
+
+#define	_MPFQ_GF2N_HAS_NATIVE_SQR
+static inline void
+NEWPREFIX_sqr (NEWPREFIX_field_ptr K, NEWPREFIX_dst_elt r, NEWPREFIX_src_elt s)
+{
+	K->sqr++;
+	OLDPREFIX_sqr(K->ptr, r, s);
+}
+
+#define	_MPFQ_GF2N_HAS_NATIVE_SQRT
+static inline void
+NEWPREFIX_sqrt (NEWPREFIX_field_ptr K, NEWPREFIX_dst_elt r, NEWPREFIX_src_elt s)
+{
+	K->sqrt++;
+	OLDPREFIX_sqrt(K->ptr, r, s);
+}
+
+/* random is provided by the fallback code */
+/* random2 is provided by the fallback code */
+
+#define	_MPFQ_GF2N_HAS_NATIVE_INV
+static inline void
+NEWPREFIX_inv (NEWPREFIX_field_ptr K, NEWPREFIX_dst_elt r, NEWPREFIX_src_elt s)
+{
+	K->inv++;
+	OLDPREFIX_inv(K->ptr, r, s);
+}
+
+/* Not counted, but it's better to redefine it anyway */
+#define	_MPFQ_GF2N_HAS_NATIVE_TRACE
+static inline mp_limb_t
+NEWPREFIX_trace (NEWPREFIX_field_ptr K, NEWPREFIX_src_elt s)
+{
+	/* K->trace++; */
+	return OLDPREFIX_trace(K->ptr, s);
+}
+
+#define	_MPFQ_GF2N_HAS_NATIVE_AS_SOLVE
+static inline void
+NEWPREFIX_as_solve (NEWPREFIX_field_ptr K, NEWPREFIX_dst_elt r, NEWPREFIX_src_elt s)
+{
+	K->as_solve++;
+	OLDPREFIX_as_solve(K->ptr, r, s);
+}
+
+/* set is provided by the fallback code */
+/* set_ui is provided by the fallback code */
+/* set_uipoly is provided by the fallback code */
+/* set_uipoly_wide is provided by the fallback code */
+/* get_ui is provided by the fallback code */
+/* get_uipoly is provided by the fallback code */
+/* get_uipoly_wide is provided by the fallback code */
+/* cmp is provided by the fallback code */
+/* cmp_ui is provided by the fallback code */
+
+#include "gf2n_fallbacks.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+/* vim:set ft=cpp: */

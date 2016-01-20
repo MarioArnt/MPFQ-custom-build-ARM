@@ -1,0 +1,121 @@
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mpfq_name_K.h
+    COMMAND ./mk_name_k.pl api_file=../api.pl name=K 
+        > ${CMAKE_CURRENT_BINARY_DIR}/mpfq_name_K.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/mk_name_k.pl
+        ${CMAKE_CURRENT_SOURCE_DIR}/../api.pl
+    )
+
+SET(ALL_PE_CHECKS)
+SET(ALL_P_CHECKS)
+SET(ALL_2_CHECKS)
+MACRO(BASIC_TEST tag)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}.c
+    COMMAND sed -e 's/TAG/${tag}/g' < mpfq_test.c.meta >
+    ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}.c
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/mpfq_test.c.meta
+    )
+SET(foo)
+FOREACH(v ${ARGN})
+    SET(foo "${foo} ${v}")
+ENDFOREACH(v)
+SET_SOURCE_FILES_PROPERTIES (${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}.c
+        COMPILE_FLAGS "${foo} -std=c99")
+ADD_EXECUTABLE(mpfq_test_${tag} EXCLUDE_FROM_ALL
+    ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}.c
+    ${CMAKE_CURRENT_BINARY_DIR}/mpfq_name_K.h
+)
+TARGET_LINK_LIBRARIES(mpfq_test_${tag} gmp mpfq_${tag})
+
+ADD_CUSTOM_TARGET(check-${tag}
+    COMMAND  ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}
+    DEPENDS  ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}
+    VERBATIM
+)
+ENDMACRO(BASIC_TEST)
+
+MACRO(BASIC_EXT_TEST tag btag)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}.c
+    COMMAND sed -e 's/TAG/${tag}/g' < mpfq_test.c.meta >
+    ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}.c
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/mpfq_test.c.meta
+    )
+SET(foo)
+FOREACH(v ${ARGN})
+    SET(foo "${foo} ${v}")
+ENDFOREACH(v)
+SET_SOURCE_FILES_PROPERTIES (${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}.c
+        COMPILE_FLAGS "${foo} -std=c99")
+ADD_EXECUTABLE(mpfq_test_${tag} EXCLUDE_FROM_ALL
+    ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}.c
+    ${CMAKE_CURRENT_BINARY_DIR}/mpfq_name_K.h
+)
+TARGET_LINK_LIBRARIES(mpfq_test_${tag} gmp mpfq_${tag} mpfq_${btag})
+
+ADD_CUSTOM_TARGET(check-${tag}
+    COMMAND  ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}
+    DEPENDS  ${CMAKE_CURRENT_BINARY_DIR}/mpfq_test_${tag}
+    VERBATIM
+)
+ENDMACRO(BASIC_EXT_TEST)
+
+
+BASIC_TEST(p_25519 -DFIX_PRIME)
+BASIC_TEST(p_127_735 -DFIX_PRIME)
+BASIC_TEST(p_127_1 -DFIX_PRIME)
+SET(ALL_P_CHECKS ${ALL_P_CHECKS} check-p_25519 check-p_127_735 check-p_127_1)
+
+set_target_properties(mpfq_test_p_127_735 PROPERTIES COMPILE_FLAGS "-O2")
+set_target_properties(mpfq_test_p_127_1 PROPERTIES COMPILE_FLAGS "-O2")
+
+FOREACH (II RANGE 2 256)
+    BASIC_TEST (2_${II} -DCHAR2 -msse2)
+    SET(ALL_2_CHECKS ${ALL_2_CHECKS} check-2_${II})
+ENDFOREACH(II)
+
+FOREACH (II RANGE 1 9)
+    BASIC_TEST (p_${II})
+    BASIC_TEST (pm_${II})
+    SET(ALL_P_CHECKS ${ALL_P_CHECKS} check-p_${II} check-pm_${II})
+ENDFOREACH(II)
+
+FOREACH (II RANGE 0 8)
+    BASIC_TEST (p_${II}_5 -DHALF_WORD)
+    BASIC_TEST (pm_${II}_5 -DHALF_WORD)
+    SET(ALL_P_CHECKS ${ALL_P_CHECKS} check-p_${II}_5 check-pm_${II}_5)
+ENDFOREACH(II)
+
+
+BASIC_EXT_TEST(p_127_1_e p_127_1 -DEXT_FIX_PRIME -DBFIELD=p_127_1)
+BASIC_EXT_TEST(p_25519_e p_25519 -DEXT_FIX_PRIME -DBFIELD=p_25519)
+BASIC_EXT_TEST(p_127_735_e p_127_735 -DEXT_FIX_PRIME -DBFIELD=p_127_735)
+SET(ALL_PE_CHECKS ${ALL_PE_CHECKS} check-p_127_1_e check-p_25519_e check-p_127_735_e)
+
+FOREACH (II RANGE 1 9)
+    BASIC_EXT_TEST (p_${II}_e p_${II} -DEXT_FIX_PRIME -DBFIELD=p_${II})
+    BASIC_EXT_TEST (pm_${II}_e pm_${II} -DEXT_FIX_PRIME -DBFIELD=pm_${II})
+    SET(ALL_PE_CHECKS ${ALL_PE_CHECKS} check-p_${II}_e check-pm_${II}_e)
+ENDFOREACH(II)
+
+FOREACH (II RANGE 0 8)
+    BASIC_EXT_TEST (p_${II}_5_e p_${II}_5 -DEXT_FIX_PRIME -DHALF_WORD -DBFIELD=p_${II}_5)
+    BASIC_EXT_TEST (pm_${II}_5_e pm_${II}_5 -DEXT_FIX_PRIME -DHALF_WORD -DBFIELD=pm_${II}_5)
+    SET(ALL_PE_CHECKS ${ALL_PE_CHECKS} check-p_${II}_5_e check-pm_${II}_5_e)
+ENDFOREACH(II)
+
+
+ADD_CUSTOM_TARGET(check)
+ADD_DEPENDENCIES(check check-fixmp)
+ADD_DEPENDENCIES(check ${ALL_PE_CHECKS} ${ALL_P_CHECKS} ${ALL_2_CHECKS})
+
+ADD_CUSTOM_TARGET(check-gfpe)
+ADD_DEPENDENCIES(check-gfpe ${ALL_PE_CHECKS})
+
+ADD_CUSTOM_TARGET(check-gfp)
+ADD_DEPENDENCIES(check-gfp ${ALL_P_CHECKS})
+
+ADD_CUSTOM_TARGET(check-gf2n)
+ADD_DEPENDENCIES(check-gf2n ${ALL_2_CHECKS})

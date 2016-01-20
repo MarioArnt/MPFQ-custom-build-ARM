@@ -1,0 +1,45 @@
+      fixmp: Fixed size Multiprecision Package
+      ========================================
+
+This package is supposed to provide support for fixed size integer
+arithmetic. All the functions are static, and everything is defined in
+".h" files. There are some default functions, based on GMP's longlong.h
+or wrapper around no-fixed-size versions, and some processor specific
+functions.
+
+NB: some files are created by perl scripts that are in the perl subdir.
+
+List of original files (not perl-created):
+  fixmp.h
+  Makefile
+  README
+  perl/*
+
+WARNING: redc assumes that the MSB in p is off.
+
+TODO: return carries in add, sub, addmul1. Handling the case where p is
+full in redc would be usefull.
+
+
+For each small size X, the following functions are provided:
+  static void addmul1_X(mp_limb_t *z, const mp_limb_t *x, const mp_limb_t c);
+  static void add_X(mp_limb_t *z, const mp_limb_t *x, const mp_limb_t *y);
+  static void sub_X(mp_limb_t *z, const mp_limb_t *x, const mp_limb_t *y);
+  static void mul_X(mp_limb_t *z, const mp_limb_t *x, const mp_limb_t *y);
+  static void sqr_X(mp_limb_t *z, const mp_limb_t *x);
+  static void mod_X(mp_limb_t *z, const mp_limb_t *x, const mp_limb_t *p);
+  static int cmp_X(const mp_limb_t *x, const mp_limb_t *y);
+  static void shortmul_X(mp_limb_t *z, const mp_limb_t *x, const mp_limb_t *y);
+  static void redc_X(mp_limb_t *z, mp_limb_t *x, const mp_limb_t *mip, const mp_limb_t *p);
+
+  
+
+In the future, one could/should have also:
+  static void shortsqr_X(mp_limb_t *z, const mp_limb_t *x, const mp_limb_t *y);
+  static void add_inplace_X(mp_limb_t *z, const mp_limb_t *x);
+  static void sub_inplace_X(mp_limb_t *z, const mp_limb_t *x);
+  static void submul1_X(mp_limb_t *z, const mp_limb_t *x, const mp_limb_t c);
+  static void lshift_X(...);
+  static void rshift_X(...);
+  static void xgcd_X(...);
+

@@ -1,0 +1,133 @@
+
+OO support.
+===========
+
+Mpfq (so far uniquely with the simd ``abase'' mechanism in mind) offers
+sort of an object-oriented interface, written in C. The idea is that all
+functions eventually called remain the same, and that we add a layer of
+indirect function calls to allow completely generic code to be able to
+work with data corresponding to different fields. Of course this works
+only as long as speed-critical sections of the code avoid these costly
+function pointers !
+
+This comes with several level of complications.
+
+The main object created by this OO structure is the so called ``virtual
+base'' (a.k.a abstract base class), which models the mpfq api. Each
+function from the mpfq api may be accessed by a function pointer found in
+this base class (see below for the way of generating the corresponding
+code). The virtual base is thus mostly an array of function pointers
+(unimplmented code yielding NULL pointers). Most arguments of the
+corresponding prototypes are anonymized to void* pointers (constness is
+preserved). Since additionally the virtual base is also considered to own
+one field (only the concrete implementation for it is not specified), it
+holds a data field named ``obj'', which can be cast to a ``dst_field''
+pointer.  Note that by definition the virtual base is not specifically
+bound to one concrete implementation.  Therefore its name does not bear
+the tag prepended to the rest of the mpfq-generated stuff. It is also
+placed into a separate file.
+
+Initialization of a virtual base is typically done with one
+``constructor'' function from a concrete implementation. If the virtual
+base mechanism is enabled (see below), then the Mpfq api includes three
+calls named oo_field_init(), oo_field_clear() and oo_impl_name(). These
+are expanded with names which correspond to the concrete implementation.
+The oo_field_init() function does exactly the same as the plain
+field_init(), but does so on a virtual base object (and thus allocates,
+and secondly initializes, its obj field). oo_field_clear() does the
+converse, and oo_impl_name() is a commodity function returning the mpfq
+TAG for the concrete implementation.
+
+The second level of genericity comes with the consideration of families
+of implementations (see below). Then, it is possible to initialize a
+virtual base object by performing selection which occurs at runtime.  An
+_example_ of such a mechanism is provided by the oo_field_init_byname()
+method.  Such an initialization is not a priori bound to a concrete
+implementation or another, since its purpose is precisely to choose
+between several. Therefore its name is not prefixed by the mpfq tag, and
+it is fair to say that such a function completely escapes the API that
+_this file_ is meant to describe. Therefore oo_field_init_byname() does
+not belong to the same ``ring'' of oo functions than the three functions
+listed above. The prototype of oo_field_init_byname() naturally appears
+next to the definition of the virtual base, and its implementation goes
+into a separate C file dedicated to stuff which is specific to the
+virtual base.
+
+The third level of difficulties originates from the existence of
+functions which act on two different concrete implementations. These
+functions are referred to as ``member templates'', following C++
+terminology. Driven by our use case, we consider only the case of one
+template argument to methods. We are thus considering function which are
+related to one concrete implementation, and whose task is to do stuff in
+cooperation with data from a second concrete implementation.  Mpfq makes
+this possible by providing a secondary structure of function pointers,
+with all such member templates. This secondary structure is intialized by
+combining two virtual bases. This is done by oo_init_templates(), which
+obviously is similar in status to oo_field_init_byname(): it is not
+particularily linked to _one_ concrete implementation, and thus its code
+goes to a C file which is companion to the one defining the virtual base
+structure (as well as the member template structure). Note that we do not
+necessarily consider that given two virtual bases corresponding to
+concrete implementations T0, T1, all member templates must be
+instantiated with T0, T1. There is a stub of support for such refinement,
+but unused so far.
+
+Intended usage
+==============
+
+The generator code simd/abase.pl is assumed to be a working example.
+
+Generation of code related to the abstract base class:
+
+* The base class is generated only when a hash named
+  $options->{'virtual_base'} is found in the input options list. The
+  direct effect on concrete implementations is that:
+   - the oo_field_init(), _clear(), and oo_impl_name() functions are
+   created.
+   - the concrete implementation source and header files generated depend
+   on the header defining the virtual base.
+* For the header defining the virtual base to be generated, one must
+  call the function
+      create_abstract_bases_headers($output_path, $api, $options);
+* Functions which relate only to the virtual base, such as constructor
+  selection   at runtime or binding of member template necessitates the
+  setting of a 'family' member of the options hash:
+    $options->{'family'} = [ qw/tag1 tag2 tag3/ ];
+  It is also necessary to specify the stem of the corresponding mpfq prefixes:
+    $options->{'prefix'} = 'abase_';
+  Doing this triggers two actions:
+   - the virtual base header and source file are augmented to include
+   support for the requested features.
+   - generation code for the concrete implementations
+   (code_for_member_template_XXX) is called for each relevant
+   instantiation parameters. Note that the calling conventions for
+   code_for_member_template_XXX differs slightly from code_for_XXX, see
+   simd/perl/simd_dotprod.pm for an example
+
+* Restrictions of the member template instantiations to be generated (unused)
+    $options->{'member_templates_restrict'} = {
+          tag1 => [qw/tag2 tag3/],
+          tag2 => [qw/tag3/],
+          tag3 => [qw/tag1/],
+    }
+
+C++
+
+All this can also translate to C++ code relatively easily. This has not
+been done.
+
+Shortcomings.
+
+There are many, surely.
+
+virtual bases which do not exactly correspond to the same interfaces (not
+the same api_extensions) need to be defined separately. Admittedly this is
+half-baked work at the moment, since no clear decision has been taken
+regarding which set of virtual bases exist, corresponding to which sets
+of api_extensions. If this interface proves useful, this might be something to
+consider. Note though that the performance penalty of such interfaces is
+very high, therefore we do not expect that it's going to be useful
+speed-wise , of course. This is orthogonal to the relevance of providing
+a template-based mechanism.
+
+

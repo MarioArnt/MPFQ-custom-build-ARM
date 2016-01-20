@@ -1,0 +1,4 @@
+This directory is a stub for an implementation of GF(7). The purpose is
+to illustrate the way one can start the implementation of a new field of
+family of fields within the Mpfq mechanism.
+

@@ -1,0 +1,8 @@
+Non-exhaustive list...
+
+- Better mul_ui
+
+- Better reduce (have a specific redc?)
+
+- Implement is_sqr as a Jacobi symbol.
+

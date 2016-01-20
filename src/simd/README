@@ -1,0 +1,3 @@
+
+The purpose of this family of functions is to generate the equivalent of
+cado-nfs's abase mechanism, together with a virtual base functionality.

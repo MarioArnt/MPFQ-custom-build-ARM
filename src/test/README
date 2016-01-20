@@ -1,0 +1,27 @@
+Testing programs.
+-----------------
+
+Typing
+  make all_tests
+will build and run many test binaries that will check some arithmetic
+equality in the finite fields implemented in Mpfq.
+
+If you want to test a single TAG, try something like:
+  make do-test-2_23
+or
+  make do-test-p_25519
+
+If you need to run heavy tests on a particular field, you can give more
+options to the test binary. Examples follow.
+
+# Run 20 loops of 1000 tests in GF(2^251), with a seed of 87653
+make mpfq_test_2_251
+./mpfq_test_2_251 -N 20 -n 1000 -s 87653
+
+# Run an infinite loop of 10000 tests in GF(p) with p of 2 words
+# in a quiet mode, printing one dot per loop.
+# In case of failure, it will print the seed to replay the buggy inputs.
+make mpfq_test_p_2
+./mpfq_test_p_2 -N 0 -q -n 10000
+
+
