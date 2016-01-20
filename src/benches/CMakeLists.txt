@@ -10,7 +10,7 @@ FOREACH (I ${inc})
    SET (iflags "${iflags} -I${I}")
 ENDFOREACH(I)
 
-SET (cflags "${iflags} -msse2 -DNDEBUG -O4")
+SET (cflags "${iflags}   -DNDEBUG -O4")
 
 ADD_CUSTOM_TARGET(bench
     COMMAND ./bench.pl --keep --cflags ${cflags} --tmpdir tmp

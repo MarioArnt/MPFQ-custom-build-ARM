@@ -13,7 +13,7 @@
 
 #ifdef  need_dotprod_64K_64
 #ifdef  HAVE_SSE2
-#include <emmintrin.h>
+//#include <emmintrin.h>
 /* u has n rows of 64K bits
  * v has n rows of 64 bits.
  * Compute (u|v) == tr(u)*v into the area pointed to by v: 64K rows of 64 bits.
@@ -80,7 +80,7 @@ static inline void dotprod_64K_64(uint64_t * b, const uint64_t * A, const uint64
  * v has n rows of 128 bits.
  * Compute (u|v) == tr(u)*v into the area pointed to by v: 64K rows of 128 bits.
  */
-#include <emmintrin.h>
+//#include <emmintrin.h>
 static inline void dotprod_64K_128(
         uint64_t * w,           // 128 at a time
         const uint64_t * u,     // 128 at a time
@@ -186,7 +186,7 @@ static inline void dotprod_64K_64L(
  * 64L matrix v -- n must be even. Result is put in w.
  */
 #ifdef HAVE_SSE2
-#include <emmintrin.h>
+//#include <emmintrin.h>
 static inline void vaddmul_tiny_64K_64L(
             uint64_t * w,
             const uint64_t * u,

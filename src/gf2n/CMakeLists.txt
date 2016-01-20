@@ -51,10 +51,10 @@ MACRO (CREATE_TAG tag)
         COMMAND ${CMAKE_COMMAND} -E remove -f ${cfile} ${hfile} ; /bin/true)
 ENDMACRO(CREATE_TAG)
 
-FOREACH (II RANGE 2 256)
-    CREATE_TAG (2_${II} -msse2)
+FOREACH (II RANGE 2 10)
+    CREATE_TAG (2_${II}  )
 ENDFOREACH(II)
-    
+
 add_custom_target(scrub-gf2n-all
     COMMAND
     find ${MPFQ_INC_DIR} ${CMAKE_CURRENT_BINARY_DIR}/ -name

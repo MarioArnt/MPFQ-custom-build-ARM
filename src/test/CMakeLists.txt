@@ -72,7 +72,7 @@ set_target_properties(mpfq_test_p_127_735 PROPERTIES COMPILE_FLAGS "-O2")
 set_target_properties(mpfq_test_p_127_1 PROPERTIES COMPILE_FLAGS "-O2")
 
 FOREACH (II RANGE 2 256)
-    BASIC_TEST (2_${II} -DCHAR2 -msse2)
+    BASIC_TEST (2_${II} -DCHAR2  )
     SET(ALL_2_CHECKS ${ALL_2_CHECKS} check-2_${II})
 ENDFOREACH(II)
 

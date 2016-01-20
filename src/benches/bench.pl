@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 my $keep;
-my $cflags = "-msse2 -DNDEBUG -I../fixmp -I../gfp -I../gf2n/ -I../gf2n -I../include -O4 -W";
+my $cflags = "  -DNDEBUG -I../fixmp -I../gfp -I../gf2n/ -I../gf2n -I../include -O4 -W";
 my $ldflags = "-lgmp";
 my $tmpdir="/tmp";
 
@@ -29,7 +29,7 @@ while (scalar @ARGV && $ARGV[0] =~ /^-/) {
 }
 
 
-my @tags = ( 
+my @tags = (
   {TAG => "p_127_735", TAG_SIZE_P => "0", TAGP => "{}", CFLAGS => "../gfp/mpfq_p_127_735.c"},
   {TAG => "p_127_1", TAG_SIZE_P => "0", TAGP => "{}", CFLAGS => "../gfp/mpfq_p_127_1.c"},
   {TAG => "p_25519", TAG_SIZE_P => "0", TAGP => "{}", CFLAGS => "../gfp/mpfq_p_25519.c"},
@@ -104,7 +104,7 @@ for ($i = 0; $i < scalar(@tags); $i++) {
     $line =~ s/TAG/$tags[$i]{TAG}/g;
     print $f_out $line;
   }
-  
+
   close $f_out;
   close $f_in;
 
@@ -146,5 +146,3 @@ for ($i = 0; $i < scalar(@tags); $i++) {
 	  unlink $binary;
   }
 }
-
-

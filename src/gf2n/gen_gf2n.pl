@@ -81,7 +81,7 @@ MAIN: {
     if (defined(my $c = $options->{'coeffs'})) {
         my @x = split(' ', $c);
         $options->{'coeffs'} = \@x;
-    } else {    
+    } else {
         my @x = get_defining_poly($n);
         $options->{'coeffs'} = \@x;
     }
@@ -102,7 +102,6 @@ MAIN: {
     '<assert.h>',
     '<stdint.h>',
     '<ctype.h>',
-    '<emmintrin.h>',
     ];
 
     if (($options->{'w'})) {
